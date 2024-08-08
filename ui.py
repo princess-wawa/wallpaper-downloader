@@ -12,7 +12,7 @@ class MyApp(Adw.Application):
     def on_activate(self, app):
         # Create a Builder
         builder = Gtk.Builder()
-        builder.add_from_file("/home/vivian/Desktop/vsc/wallpaper downloader/ui/main.ui")
+        builder.add_from_file("./ui/main.ui")
 
         # Obtain and show the main window
         self.win = builder.get_object("main")
