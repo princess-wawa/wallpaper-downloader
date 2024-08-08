@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
+<cambalache-project version="0.17.3" target_tk="gtk-4.0">
+  <ui>
+	(1,None,"main.ui","main.ui",None,None,None,None,None,None,None)
+  </ui>
+  <object>
+	(1,5,"AdwApplicationWindow","main",None,None,None,None,-1,None,None),
+	(1,6,"GtkBox",None,5,None,None,None,None,None,None),
+	(1,7,"AdwHeaderBar","titlebar",6,None,None,None,None,None,None),
+	(1,8,"GtkImage",None,6,None,None,None,1,None,None),
+	(1,9,"GtkMenuButton","infos",7,None,"end",None,1,None,None),
+	(1,10,"GtkButton","refresh",7,None,"start",None,4,None,None),
+	(1,11,"GtkButton","settings",7,None,"end",None,None,None,None),
+	(1,12,"GtkButton","download",7,None,"end",None,2,None,None),
+	(1,13,"GtkButton","wallpaper",7,None,"end",None,3,None,None),
+	(1,14,"GtkEntry","query",7,None,"start",None,5,None,None)
+  </object>
+  <object_property>
+	(1,6,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(1,8,"GtkImage","file","aaa.png",None,None,None,None,None,None,None,None,None),
+	(1,8,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(1,8,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(1,9,"GtkMenuButton","icon-name","help-about",None,None,None,None,None,None,None,None,None),
+	(1,9,"GtkWidget","tooltip-text","informations",None,None,None,None,None,None,None,None,None),
+	(1,10,"GtkButton","icon-name","view-refresh-symbolic",None,None,None,None,None,None,None,None,None),
+	(1,11,"GtkButton","icon-name","emblem-system-symbolic",None,None,None,None,None,None,None,None,None),
+	(1,11,"GtkWidget","tooltip-text","settings",None,None,None,None,None,None,None,None,None),
+	(1,12,"GtkButton","icon-name","folder-download-symbolic",None,None,None,None,None,None,None,None,None),
+	(1,12,"GtkWidget","tooltip-text","download",None,None,None,None,None,None,None,None,None),
+	(1,13,"GtkButton","icon-name","emblem-photos-symbolic",None,None,None,None,None,None,None,None,None),
+	(1,13,"GtkWidget","tooltip-text","set as wallpaper",None,None,None,None,None,None,None,None,None),
+	(1,14,"GtkEntry","placeholder-text","enter a query",None,None,None,None,None,None,None,None,None)
+  </object_property>
+</cambalache-project>

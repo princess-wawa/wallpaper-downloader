@@ -1,0 +1,22 @@
+{
+    "ApiName": "test",
+    "ApiCall": {
+        "Url": "https://foo.bar/[r]/url?[q]&[t]&[w]x[h]",
+        "Setting1": {
+            "Type" : "letter",
+            "Length": 4
+        },
+        "setting3":{
+            "Name": "NSFW",
+            "Onstate": "true",
+            "Offstate": "false"
+        }
+    },
+    "image":{
+        "BaseUrl": "foo.bar/image/",
+        "Settings":{
+            "Answer":"main:image;url",
+            "Extension": ".png"
+        }
+    }
+}
