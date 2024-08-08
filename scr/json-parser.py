@@ -2,11 +2,14 @@ import os
 import json
 import random
 import math
+from pathlib import Path
 from PIL import ImageGrab
 
-def listapis(path):
+def listapis(foldername):
     """returns a list of the name key, path, and content of each json in the folder as a tuples of name and path"""
-
+    # gets this file's parent's parent, aka the main folder, and add the string in the var "foldername" at the end of the path
+    path = Path(__file__).parent.parent / foldername 
+    
     fileslist = []
     # puts all the paths to json files in a list
     for filename in os.listdir(path):
@@ -35,7 +38,7 @@ def listapis(path):
     
     return apilist
 
-def findjson(apiname:str, path:str, outputtype="path"):
+def findjson(apiname:str, foldername:str, outputtype="path"):
     """
     function that returns the path or the content of the json file that have a "name": that matches the given string input
     
@@ -54,7 +57,7 @@ def findjson(apiname:str, path:str, outputtype="path"):
         position = 1
         
     
-    apilist = listapis(path)
+    apilist = listapis(foldername)
     matching_file = ""
     for e in apilist:
         if e[0] == apiname :
@@ -102,7 +105,7 @@ def GetApiCallVariables(apiname:str):
         api key (k): gets the value put in the entry box in settings
         
     """
-    data = findjson(apiname,"./apis", "content")
+    data = findjson(apiname,"apis", "content")
     apicall = data.get("ApiCall", {})
     url = str(apicall.get("Url"))
     variables = getvarsfromurl(url)
@@ -176,8 +179,3 @@ def apicallfetcher(apiname:str):
     """ a function that takes the name of an Api and gives the final string used to make the api call"""
     url, values = GetApiCallVariables(apiname)
     return PutvarsintoUrl(url, values)
- 
-
-   
-if __name__ == "__main__":
-    print(apicallfetcher("test"))

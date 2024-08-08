@@ -2,6 +2,7 @@
 <!-- Created with Cambalache 0.90.4 -->
 <interface>
   <!-- interface-name main.ui -->
+  <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.12"/>
   <requires lib="libadwaita" version="1.0"/>
   <object class="AdwApplicationWindow" id="main">
@@ -19,6 +20,7 @@
             <child type="end">
               <object class="GtkMenuButton" id="infos">
                 <property name="icon-name">help-about</property>
+                <property name="menu-model">infos_menu</property>
                 <property name="tooltip-text">informations</property>
               </object>
             </child>
@@ -55,4 +57,16 @@
       </object>
     </child>
   </object>
+  <menu id="infos_menu">
+    <section id="about-menu">
+      <item>
+        <attribute name="action">app.show-art-about</attribute>
+        <attribute name="label" translatable="yes">About Art</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.about</attribute>
+        <attribute name="label">About app</attribute>
+      </item>
+    </section>
+  </menu>
 </interface>
