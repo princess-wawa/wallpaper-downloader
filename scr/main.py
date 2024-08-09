@@ -6,6 +6,7 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Gio, Adw, GdkPixbuf, GLib
 from buttons import buttons
+import jsonparser as jp
 
 apppath = str(Path(__file__).parent.parent / "ui" / "main.ui")
 
@@ -38,14 +39,17 @@ class wallpaperdownloaderApplication(Adw.Application):
         # Obtain and show the main window
         self.win = builder.get_object("main")
         self.win.set_application(self)  # Application will close once it no longer has active windows attached to it
+        self.win.set_title("wallpaper Downloader")
         
         # set button up references
         self.settings = builder.get_object("settings")
         self.download = builder.get_object("download")
         self.wallpaper = builder.get_object("wallpaper")
+        self.refresh = builder.get_object("refresh")
         self.settings.connect("clicked", self.on_settings_action)
         self.download.connect("clicked", self.on_download_action)
         self.wallpaper.connect("clicked", self.on_wallpaper_action)
+        self.refresh.connect("clicked", self.on_refresh_action)
         
         self.win.present()
         
@@ -72,15 +76,18 @@ class wallpaperdownloaderApplication(Adw.Application):
                                     website="https://nekos.moe/post/" + info['id'])
             about.present()
     
-    def on_settings_action(self,widget,_=""):
+    def on_settings_action(self,widget):
         return
     
-    def on_download_action(self, widget, _=""):
+    def on_download_action(self, widget):
         buttons.download()
         
-    def on_wallpaper_action(self,widget,_=""):
+    def on_wallpaper_action(self,widget):
         buttons.wallpaper()
 
+    def on_refresh_action(self,widget):
+        jp.reloadimage()
+        
     
     def create_action(self, name, callback, shortcuts=None):
         """Add an application action.

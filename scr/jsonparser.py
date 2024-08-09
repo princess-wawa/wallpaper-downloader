@@ -2,8 +2,12 @@ import os
 import json
 import random
 import math
+import requests
+import threading
+from io import BytesIO
 from pathlib import Path
-from PIL import ImageGrab
+from PIL import Image, ImageGrab
+
 
 def listapis(foldername):
     """returns a list of the name key, path, and content of each json in the folder as a tuples of name and path"""
@@ -38,7 +42,7 @@ def listapis(foldername):
     
     return apilist
 
-def findjson(apiname:str, foldername:str, outputtype="path"):
+def findjson(apiname:str, foldername:str="apis", outputtype="content"):
     """
     function that returns the path or the content of the json file that have a "name": that matches the given string input
     
@@ -53,8 +57,8 @@ def findjson(apiname:str, foldername:str, outputtype="path"):
     elif outputtype == "content":
         position = 2 
     else:
-        print(f"{outputtype} is not a valid type, defaulting to path")
-        position = 1
+        print(f"{outputtype} is not a valid type, defaulting to content")
+        position = 2
         
     
     apilist = listapis(foldername)
@@ -128,10 +132,12 @@ def GetApiCallVariables(apiname:str):
             print("query")
             values.append("query")
         elif e == "t":
+            assert currentsetting != {}, "missing settings"
             # from the imported ui.py
             print("toggle")
             values.append("toggle")
         elif e == "r":
+            assert currentsetting != {}, "missing settings"
             stringtype, lenght = currentsetting.get("Type"), currentsetting.get("Length")
             values.append(generaterandom(stringtype, lenght))
         elif e == "w":
@@ -173,9 +179,116 @@ def PutvarsintoUrl(url:str, values:list):
                 usedvar += 1
             else:
                 finalstring = f"{finalstring}{url[i]}"
+    if ignore == 0:
+        finalstring = f"{finalstring}{url[-2]}{url[-1]}"
+    elif ignore == 1:
+        finalstring = f"{finalstring}{url[-1]}"
+        
     return finalstring
 
-def apicallfetcher(apiname:str):
+def apicallfetcher():
     """ a function that takes the name of an Api and gives the final string used to make the api call"""
-    url, values = GetApiCallVariables(apiname)
+    global selectedapi
+    url, values = GetApiCallVariables(selectedapi)
     return PutvarsintoUrl(url, values)
+
+def GetApiresponseVariables(which:str, response):
+    """Api that gets the differerent variables from the response.json file
+
+    Args:
+        which (str): describes which response i am fetching, image, source or author
+        response (dict): the response of the api GET from which to take the variables
+    """
+    global selectedapi
+    currentapi = findjson(selectedapi)
+    settings = currentapi.get(which)
+    url = settings.get("Url")
+    variables = getvarsfromurl(url)
+    
+    values = []
+    
+    for i in range(len(variables)):
+        currentsetting = settings.get(f"Answer{i+1}", {})
+        assert currentsetting != {}, "missing settings"
+        position = currentsetting.split(":")
+        variable  = response
+        for e in position:
+            variable = variable.get(e)
+        values.append(variable)
+    
+    return url, values
+
+def geturlfromresponse(response:dict, which):
+    """function that gives the url of the current image
+    """
+    url, values = GetApiresponseVariables(which, response)
+    return PutvarsintoUrl(url, values)
+
+def downloadimage(url):
+    """downloads the image, converts it to a .png and saves it as response/response.png"""
+    filepath = Path(__file__).parent.parent / "response" / "response.png"
+    filepath.parent.mkdir(parents=True, exist_ok=True) # make sure the path exists, if not, create it
+    
+    response = requests.get(url)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        image = Image.open(BytesIO(response.content))
+        image = image.convert("RGBA")  # converts image to PNG
+        
+        image.save(filepath, "PNG")
+        print(f"Image downloaded, converted to PNG, and saved as {filepath}")
+    else:
+        print("Failed to download image. HTTP Status code:", response.status_code)
+
+def Getinformations(response, which):
+    """gets the name of the author or the source"""
+    global selectedapi
+    currentapi = findjson(selectedapi)
+    authorpath = currentapi.get(which)
+    assert authorpath != {}, "missing settings"
+    
+    authorpath = authorpath.split(":")
+    authorname = response
+    for e in authorpath:
+        authorname = authorname.get(e)
+        
+    return authorname    
+
+def async_downloadimage(aaa=None):
+    """Call the function to download the image on another thread
+    """
+    print("downloading image")
+    t = threading.Thread(target=downloadimage, args=[aaa])
+    t.start()
+
+def reloadimage():
+    """does all the logic for calling the api, once done, puts the image in /response/response.png and the "author" and the "source" in the global variable "response" """
+    global response
+    global selectedapi
+    settings = findjson(selectedapi)
+    callurl = apicallfetcher() 
+    response = {}
+
+    if settings.get("Image") == None:
+        async_downloadimage(callurl)
+    else: 
+        currentresponse = requests.get(callurl)
+        assert currentresponse.status_code == 200, f"Call has failed. HTTP Status code: {response.status_code}, {response.content}"
+        responsecontent = currentresponse.json()
+        print(responsecontent)
+            
+        async_downloadimage(geturlfromresponse(responsecontent, "Image"))
+        
+        if settings.get("Source") != None:
+            print("getting source")
+            response["Source"] = geturlfromresponse(responsecontent, "Source")
+            print("got source")
+        
+        if settings.get("Author") != None:
+            print("getting author")
+            response["author"] = Getinformations(responsecontent, "Author")
+            print("got author")
+    return
+
+selectedapi = "femboy"
