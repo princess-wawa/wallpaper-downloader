@@ -3,11 +3,11 @@
 <interface>
   <!-- interface-name main.ui -->
   <requires lib="gio" version="2.0"/>
-  <requires lib="gtk" version="4.12"/>
+  <requires lib="gtk" version="4.8"/>
   <requires lib="libadwaita" version="1.0"/>
   <object class="AdwApplicationWindow" id="main">
-    <property name="default-width">800</property>
     <property name="default-height">600</property>
+    <property name="default-width">800</property>
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
@@ -51,9 +51,27 @@
           </object>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="vexpand">True</property>
-            <property name="vexpand-set">True</property>
+          <object class="GtkBox">
+            <property name="homogeneous">True</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkImage" id="image">
+                <property name="vexpand">True</property>
+                <property name="vexpand-set">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="spinner">
+                <property name="height-request">100</property>
+                <property name="hexpand">True</property>
+                <property name="hexpand-set">True</property>
+                <property name="name">spinner</property>
+                <property name="spinning">True</property>
+                <property name="valign">center</property>
+                <property name="vexpand">True</property>
+                <property name="vexpand-set">True</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

@@ -1,15 +1,16 @@
 import sys
 import gi
+import threading
 from pathlib import Path
+import time
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from gi.repository import Gtk, Gio, Adw, GdkPixbuf, GLib
-from buttons import buttons
+from gi.repository import Gtk, Gio, Adw, GdkPixbuf, GLib, Gdk
+import buttons as buttons
 import jsonparser as jp
 
-apppath = str(Path(__file__).parent.parent / "ui" / "main.ui")
-
+apppath = str(Path(__file__).parent.parent / "ui" / "main.ui") 
 
 class wallpaperdownloaderApplication(Adw.Application):
     """The main application singleton class."""
@@ -41,6 +42,7 @@ class wallpaperdownloaderApplication(Adw.Application):
         self.win.set_application(self)  # Application will close once it no longer has active windows attached to it
         self.win.set_title("wallpaper Downloader")
         
+        
         # set button up references
         self.settings = builder.get_object("settings")
         self.download = builder.get_object("download")
@@ -49,12 +51,18 @@ class wallpaperdownloaderApplication(Adw.Application):
         self.settings.connect("clicked", self.on_settings_action)
         self.download.connect("clicked", self.on_download_action)
         self.wallpaper.connect("clicked", self.on_wallpaper_action)
-        self.refresh.connect("clicked", self.on_refresh_action)
+        self.refresh.connect("clicked", self.async_on_refresh_action)
+        
+        #get things on the window
+        self.query = builder.get_object("query")
+        self.image = builder.get_object("image")
+        self.spinner = builder.get_object("spinner")
+        self.spinner.stop()
+        self.spinner.set_visible(False)
         
         self.win.present()
-        
-        
-        
+        path = str(Path(__file__).parent.parent / "response" / "response.jpg")
+        self.image.set_from_file(path)
 
     def on_about_action(self, widget, _):
         """Callback for the app.about action."""
@@ -69,13 +77,16 @@ class wallpaperdownloaderApplication(Adw.Application):
 
     def on_art_about_action(self, widget, _):
         """Callback for the app.about action."""
-        if hasattr(self.win, "info"):
-            info = self.win.info["images"][0]
+        response = jp.getresponce()
+        if response.get("Source", {}) != {}:
             about = Adw.AboutWindow(transient_for=self.props.active_window,
-                                    artists=[info['artist']],
-                                    website="https://nekos.moe/post/" + info['id'])
-            about.present()
-    
+                                    artists=[response['Author']],
+                                    website=response['Source'])
+        else:
+            about = Adw.AboutWindow(transient_for=self.props.active_window,
+                                    artists=[response['Author']])
+        about.present()
+
     def on_settings_action(self,widget):
         return
     
@@ -84,9 +95,44 @@ class wallpaperdownloaderApplication(Adw.Application):
         
     def on_wallpaper_action(self,widget):
         buttons.wallpaper()
+    
+    def show_error_dialog(self, aaa, title, message):
+        dialog = Adw.AlertDialog.new(title, None)
+        dialog.set_body(message)
+        dialog.add_response("ok", "_OK")
+        dialog.set_default_response("ok")
+        dialog.set_close_response("ok")
+        dialog.connect("response", self.on_response)
+        dialog.present(self.refresh)
 
-    def on_refresh_action(self,widget):
+    def on_response(self, dialog, response):
+        return
+    
+    def async_on_refresh_action(self, widget=""):
+        if jp.isqueryneeded():
+            currentquery = ""
+            currentquery = str(self.query.get_text())
+            if currentquery == "":
+                self.show_error_dialog(self, "no query provided", "please enter a query")
+                return
+            jp.setquery(currentquery)
+        
+        t = threading.Thread(target=self.on_refresh_action, args=(self,))
+        t.start()
+        self.image.set_visible(False)
+        self.spinner.set_visible(True)
+        self.spinner.start()
+        t.join
+
+        
+    def on_refresh_action(self, widget=""):
         jp.reloadimage()
+        path = str(Path(__file__).parent.parent / "response" / "response.jpg")
+        self.image.set_from_file(path)
+        self.spinner.stop()
+        self.spinner.set_visible(False)
+        self.image.set_visible(True)
+        
         
     
     def create_action(self, name, callback, shortcuts=None):

@@ -6,17 +6,14 @@
             "Type" : "letter",
             "Length": 4
         },
-        "setting3":{
+        "Setting3":{
             "Name": "NSFW",
             "Onstate": "true",
             "Offstate": "false"
         }
     },
-    "image":{
-        "BaseUrl": "foo.bar/image/",
-        "Settings":{
-            "Answer":"main:image;url",
-            "Extension": ".png"
-        }
+    "Image":{
+        "Url":"[a]",
+        "Answer1":"urls:full"
     }
 }

@@ -4,10 +4,12 @@ import random
 import math
 import requests
 import threading
+import time
+import numpy as np
 from io import BytesIO
 from pathlib import Path
-from PIL import Image, ImageGrab
-
+from PIL import Image
+import tkinter as tk
 
 def listapis(foldername):
     """returns a list of the name key, path, and content of each json in the folder as a tuples of name and path"""
@@ -109,6 +111,7 @@ def GetApiCallVariables(apiname:str):
         api key (k): gets the value put in the entry box in settings
         
     """
+    global query
     data = findjson(apiname,"apis", "content")
     apicall = data.get("ApiCall", {})
     url = str(apicall.get("Url"))
@@ -116,11 +119,10 @@ def GetApiCallVariables(apiname:str):
     
     values = []
     
-    
-    # Grab the screen (entire screen)
-    screen = ImageGrab.grab()
-    # Get the screen width and height
-    screen_width, screen_height = screen.size
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
     # Calculate the greatest common divisor
     gcd = math.gcd(screen_width, screen_height)
     
@@ -128,9 +130,7 @@ def GetApiCallVariables(apiname:str):
         currentsetting = apicall.get(f"Setting{i+1}", {})
         e = variables[i]
         if e == "q":
-            # from the imported ui.py
-            print("query")
-            values.append("query")
+            values.append(query)
         elif e == "t":
             assert currentsetting != {}, "missing settings"
             # from the imported ui.py
@@ -226,18 +226,17 @@ def geturlfromresponse(response:dict, which):
 
 def downloadimage(url):
     """downloads the image, converts it to a .png and saves it as response/response.png"""
-    filepath = Path(__file__).parent.parent / "response" / "response.png"
+    filepath = Path(__file__).parent.parent / "response" / "response.jpg"
     filepath.parent.mkdir(parents=True, exist_ok=True) # make sure the path exists, if not, create it
     
     response = requests.get(url)
-    
     # Check if the request was successful
     if response.status_code == 200:
         image = Image.open(BytesIO(response.content))
-        image = image.convert("RGBA")  # converts image to PNG
+        image = image.convert("RGB")  # converts image to PNG
         
-        image.save(filepath, "PNG")
-        print(f"Image downloaded, converted to PNG, and saved as {filepath}")
+        image.save(filepath, "JPEG", optimize=True)
+        print(f"Image downloaded, converted to JPEG, and saved as {filepath}")
     else:
         print("Failed to download image. HTTP Status code:", response.status_code)
 
@@ -255,40 +254,54 @@ def Getinformations(response, which):
         
     return authorname    
 
-def async_downloadimage(aaa=None):
-    """Call the function to download the image on another thread
-    """
-    print("downloading image")
-    t = threading.Thread(target=downloadimage, args=[aaa])
-    t.start()
-
 def reloadimage():
     """does all the logic for calling the api, once done, puts the image in /response/response.png and the "author" and the "source" in the global variable "response" """
     global response
     global selectedapi
     settings = findjson(selectedapi)
     callurl = apicallfetcher() 
-    response = {}
+    print(f"fetching {callurl}")
 
+    response = {}
+    
     if settings.get("Image") == None:
-        async_downloadimage(callurl)
+        downloadimage(callurl)
+        response["Author"] = "unknown"
     else: 
         currentresponse = requests.get(callurl)
         assert currentresponse.status_code == 200, f"Call has failed. HTTP Status code: {response.status_code}, {response.content}"
         responsecontent = currentresponse.json()
-        print(responsecontent)
-            
-        async_downloadimage(geturlfromresponse(responsecontent, "Image"))
+        downloadimage(geturlfromresponse(responsecontent, "Image"))
         
         if settings.get("Source") != None:
-            print("getting source")
             response["Source"] = geturlfromresponse(responsecontent, "Source")
-            print("got source")
         
         if settings.get("Author") != None:
-            print("getting author")
-            response["author"] = Getinformations(responsecontent, "Author")
-            print("got author")
+            response["Author"] = Getinformations(responsecontent, "Author")
+        else:
+            response["Author"] = "unknown"
     return
 
-selectedapi = "femboy"
+def getresponce():
+    """returns the global response varible"""
+    global response
+    return response
+
+def setquery(currentquery):
+    """ sets the global query value"""
+    global query
+    query = currentquery
+    return
+
+def isqueryneeded():
+    """checks for [q] in the current url"""
+    global selectedapi
+    data = findjson(selectedapi,"apis", "content")
+    apicall = data.get("ApiCall", {})
+    url = str(apicall.get("Url"))
+    if "[q]" in url:
+        return True
+    else:
+        return False
+
+selectedapi = "unsplash"
