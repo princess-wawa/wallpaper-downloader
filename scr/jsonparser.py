@@ -269,7 +269,8 @@ def reloadimage():
         response["Author"] = "unknown"
     else: 
         currentresponse = requests.get(callurl)
-        assert currentresponse.status_code == 200, f"Call has failed. HTTP Status code: {response.status_code}, {response.content}"
+        if currentresponse.status_code != 200:
+            return(currentresponse.status_code, currentresponse.content)# if the call has failed, give the code and the error back to be shown as an error message
         responsecontent = currentresponse.json()
         downloadimage(geturlfromresponse(responsecontent, "Image"))
         
@@ -280,7 +281,7 @@ def reloadimage():
             response["Author"] = Getinformations(responsecontent, "Author")
         else:
             response["Author"] = "unknown"
-    return
+    return True
 
 def getresponce():
     """returns the global response varible"""

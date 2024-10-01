@@ -1,6 +1,7 @@
 import sys
 import gi
 import threading
+import json
 from pathlib import Path
 import time
 
@@ -126,7 +127,12 @@ class wallpaperdownloaderApplication(Adw.Application):
 
         
     def on_refresh_action(self, widget=""):
-        jp.reloadimage()
+        a = jp.reloadimage()
+        if a != True:
+            error = json.loads(a[1].decode('utf-8')).get("errors")[0]
+            # ^ this is unreadable but it gets the error out of strings like b'{"errors":["Not found"]}'
+            print(f"HTTP status code: {a[0]}, {a[1]}")
+            self.show_error_dialog(self, f"HTTP status code:{a[0]}", f"{error}")
         path = str(Path(__file__).parent.parent / "response" / "response.jpg")
         self.image.set_from_file(path)
         self.spinner.stop()
