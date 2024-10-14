@@ -1,7 +1,7 @@
 {
     "ApiName": "unsplash",
     "ApiCall": {
-        "Url": "https://api.unsplash.com/photo/random?query=[q]&client_id=yXPM2IDzOFTjyVIB0uHrtL0KxARPSK7fT_WHLroC7Yk&orientation:landscape"
+        "Url": "https://api.unsplash.com/photos/random?query=[q]&client_id=yXPM2IDzOFTjyVIB0uHrtL0KxARPSK7fT_WHLroC7Yk&orientation:landscape"
     },
     "Image":{
         "Url":"[a]",
