@@ -4,8 +4,16 @@ from pathlib import Path
 import shutil
 import os
 
-def download():
-    print("e")
+def download(save_path):
+    path = str(Path(__file__).parent.parent / "response" / "response.jpg")
+    
+    try:
+        shutil.copy(str(path), save_path)
+        print(f"File successfully saved to: {save_path}")
+    except Exception as e:
+        print(f"Error saving file: {e}")
+    
+    
     
 def wallpaper():
     imagepath = str(Path(__file__).parent.parent / "response" / "response.jpg")

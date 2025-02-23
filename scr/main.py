@@ -4,6 +4,7 @@ import threading
 import json
 from pathlib import Path
 import time
+import os
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
@@ -90,9 +91,37 @@ class wallpaperdownloaderApplication(Adw.Application):
 
     def on_settings_action(self,widget):
         return
-    
+        
+
     def on_download_action(self, widget):
-        buttons.download()
+        dialog = Gtk.FileChooserDialog(
+            title="Save File",
+            action=Gtk.FileChooserAction.SAVE,
+        )
+
+        # get the Downloads folder to create the dialog on it
+        downloads_folder = str(Path(os.path.expanduser("~")) / "Downloads")
+        gio_file = Gio.File.new_for_path(downloads_folder)
+        dialog.set_current_folder(gio_file)
+
+        # Set the default filename
+        dialog.set_current_name("downloaded_wallpaper.jpg")
+        dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
+        dialog.add_button("Save", Gtk.ResponseType.ACCEPT)
+
+        # Handle the response
+        def on_response(dialog, response):
+            if response == Gtk.ResponseType.ACCEPT:
+                save_path = dialog.get_file().get_path()
+                print(f"File will be saved to: {save_path}")
+                buttons.download(save_path)  
+
+            dialog.destroy()
+
+        dialog.connect("response", on_response)
+        dialog.show()
+
+
         
     def on_wallpaper_action(self,widget):
         buttons.wallpaper()
